@@ -1,0 +1,6 @@
+TP final - TP8
+Phase de mise en place
+
+--0-enonce--
+1 - Vous devez installer la base de données dont le script est dans le fichier 1-voyageCreateInsert.sql sur votre serveur MySql en remplaçant la chaine "voyage_nom_prenom" avec votre nom et votre prénom
+2 - Dans le fichier 1-voyageCreateInsert.sql vous devez copier coller chacune des parties 2-voyageSelect.sql 3-voyageRights.sql 4-voyageProcedureTrigger.sql et compléter chacune des parties avec votre proposition de code, votre fichier 1-voyageCreateInsert.sql doit pouvoir être exécuté sans aucune erreurs dans une console mysql, chaque insertion, update ou delete vous permettant de tester vos propositions de code doivent être présent dans le fichier dans le bon ordre

@@ -1,0 +1,97 @@
+TP final - TP8
+Phase de mise en place
+
+4-voyageProcedureTrigger.sql
+
+# Créer une procédure "UserTravelAssignation" qui permet d'enregister une personne pour un voyage
+
+DELIMITER |
+CREATE PROCEDURE `userTravelAssignation` (
+	IN p_id INT,
+	IN p_firstname VARCHAR(255), 
+	IN p_lastname VARCHAR(255), 
+	IN p_voyageId INT,
+	IN p_prix DECIMAL
+	) 
+BEGIN
+	DECLARE v_id INT DEFAULT p_id;
+	DECLARE v_firstname VARCHAR(255) DEFAULT p_firstname; 
+	DECLARE v_lastname VARCHAR(255) DEFAULT p_lastname;
+	DECLARE v_compteur TINYINT DEFAULT 0;
+	DECLARE v_dossier VARCHAR(30);
+	DECLARE v_personne INT DEFAULT 0;
+
+
+# Si la personne n'existe pas il faut la créer
+
+IF NOT EXISTS(SELECT id FROM Personne WHERE id = v_id AND firstname = v_firstname AND lastname = v_lastname) THEN
+insertPersonne: LOOP
+IF NOT EXISTS (SELECT * FROM Personne WHERE firstname = v_firstname AND lastname = v_lastname) THEN
+INSERT INTO Personne (firstname, lastname) VALUES (v_firstname, v_lastname);
+LEAVE insertPersonne;
+ELSE 
+
+# Lors de la création d'une personne il faut vérifié si elle a des homonyme (personne avec le même nom + prénom)
+# Si il y a des homonyme il faut alors ajouter 1 au firstname et latname de la personne dans le cas ou il n'y a que deux personnes avec le même nom + prénom sinon il faut incrémenté le numéro à la fin du firstname et lastname (l'incrément peut être généré sans toujours aller de 1 en 1)
+
+SET v_compteur = v_compteur + 1;
+SET v_firstname = CONCAT(p_firstname, v_compteur);
+SET v_lastname = CONCAT(p_lastname, v_compteur);
+END IF;
+END LOOP insertPersonne;
+SET v_id = (SELECT LAST_INSERT_ID());
+END IF;
+
+# Si la personne n'a pas de numéro de dossier valide il faut le créer, une erreur doit être remonté si le numéro de dossier existe déjà
+
+IF NOT EXISTS (SELECT dossier FROM Voyageur WHERE id = v_id ) THEN
+SET v_dossier = (SELECT LEFT(UPPER(REPLACE(UUID(), '-', '')),11));
+IF EXISTS(SELECT dossier FROM Voyageur WHERE dossier = v_dossier) THEN
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Numero de dossier existe déjà ';
+END IF;
+INSERT INTO Voyageur (id, dossier) VALUES (v_id, v_dossier);
+END IF;
+
+# Il faut associer la personne au voyage sélectionné avec le prix du voyage
+
+INSERT INTO VV (voyageurId, voyageId, prix) VALUES (v_id, p_voyageId, p_prix);
+	
+END; |
+DELIMITER ;
+
+# Réaliser le trigger permettant depuis la table voyageur de s'assurer qu'il n'existe pas de conducteur déjà lié à personne avec le même ID et d'insérer la personne lié au voyageur
+
+DROP TRIGGER IF EXISTS before_insert_voyageur;
+DELIMITER |
+CREATE TRIGGER before_insert_voyageur BEFORE INSERT
+ON Voyageur FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT * FROM Conducteur WHERE NEW.id = Conducteur.id) THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "ERROR: cette personne est un conducteur";
+    END IF;
+END |
+DELIMITER ;
+
+# Bonus ! Créer une procédure permettant de générer aléatoirement des personnes participant à des voyages
+
+##### TESTS #####
+
+DELETE FROM VV WHERE voyageurId > 400;
+DELETE FROM Voyageur WHERE id > 400;
+DELETE FROM Personne WHERE id > 400;
+DELETE FROM Conducteur WHERE id > 400;
+DELETE FROM VV WHERE VoyageurId = 354 AND voyageId > 1;
+
+CALL UserTravelAssignation(354, "Sarah","Hodge", 2, 2533);
+# Test de trigger : personne avec id 22 est un conducteur
+CALL UserTravelAssignation(22, "Sarah","Mooney", 1, 2533);
+# Test des homonymes et creation de personne
+CALL UserTravelAssignation(0, "Sarah","NANANA", 1, 2533);
+CALL UserTravelAssignation(0, "Sarah","NANANA", 1, 3465 );
+CALL UserTravelAssignation(0, "Sarah","NANANA", 1, 4334);
+
+#Ici on doit obtenir une liste de 4 personnes (Sarah Hodge a deux voyages)
+SELECT * FROM Personne p 
+INNER JOIN Voyageur v ON v.id = p.id
+INNER JOIN VV ON VV.VoyageurId = v.id
+WHERE p.id > 400 || p.id = 354;

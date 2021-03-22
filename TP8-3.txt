@@ -1,0 +1,56 @@
+TP final - TP8
+Phase de mise en place
+
+
+3-voyageRights.sql
+
+# Créer un nouvel utilisateur "john" pouvant se connecter localement à mysql
+CREATE USER john@localhost IDENTIFIED BY 'john';
+
+# John doit seulement pouvoir créer et visualiser des agences avec toutes les informations de localisation qui leur sont liés ainsi que les mettres à jour, donnez lui les droits nécessaire
+
+GRANT INSERT ON voyage_moldovan_miyuki.agence TO john@localhost;
+GRANT INSERT ON voyage_moldovan_miyuki.adresse TO john@localhost;
+GRANT INSERT ON voyage_moldovan_miyuki.ville TO john@localhost;
+GRANT INSERT ON voyage_moldovan_miyuki.adresseville TO john@localhost;
+GRANT INSERT ON voyage_moldovan_miyuki.pays TO john@localhost;
+GRANT INSERT ON voyage_moldovan_miyuki.companie TO john@localhost;
+
+GRANT SELECT ON voyage_moldovan_miyuki.agence TO john@localhost;
+GRANT SELECT ON voyage_moldovan_miyuki.adresse TO john@localhost;
+GRANT SELECT ON voyage_moldovan_miyuki.ville TO john@localhost;
+GRANT SELECT ON voyage_moldovan_miyuki.adresseville TO john@localhost;
+GRANT SELECT ON voyage_moldovan_miyuki.pays TO john@localhost;
+GRANT SELECT ON voyage_moldovan_miyuki.companie TO john@localhost;
+
+GRANT UPDATE ON voyage_moldovan_miyuki.agence TO john@localhost;
+GRANT UPDATE ON voyage_moldovan_miyuki.adresse TO john@localhost;
+GRANT UPDATE ON voyage_moldovan_miyuki.ville TO john@localhost;
+GRANT UPDATE ON voyage_moldovan_miyuki.adresseville TO john@localhost;
+GRANT UPDATE ON voyage_moldovan_miyuki.pays TO john@localhost;
+GRANT UPDATE ON voyage_moldovan_miyuki.companie TO john@localhost;
+
+FLUSH PRIVILEGES;
+
+# Connectez vous entant que "john" pour insérer une nouvelle agence de votre choix
+exit
+mysql -u john -pjohn
+USE voyage_moldovan_miyuki;
+
+INSERT INTO agence (AdresseId, CompanieId) VALUES (1, 1);
+
+# Créer un nouvel utilisateur "steeve" pouvant se connecter depuis n'importe ou à mysql
+exit
+mysql -u root -p
+USE voyage_moldovan_miyuki;
+
+CREATE USER steeve@'%' IDENTIFIED BY 'steeve';
+
+# Steeve est un commercial qui doit pouvoir accéder à toutes les données de l'application en visualisation, il doit aussi pouvoir exécuter des procédures stockées
+
+GRANT SELECT ON voyage_moldovan_miyuki.* TO steeve@'%';
+GRANT EXECUTE ON PROCEDURE voyage_moldovan_miyuki TO 'steeve'@'%';
+
+
+
+

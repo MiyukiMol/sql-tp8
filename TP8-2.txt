@@ -1,0 +1,45 @@
+TP final - TP8
+Phase de mise en place
+
+2-voyageSelect.sql
+-- Trajets en cours entre deux dates
+use voyage_moldovan_miyuki;
+SELECT * FROM `trajet` WHERE `date_arrive` > '2017-01-01' AND `date_depart` > '2017-07-01';
+
+-- Chiffre d'affaire d'une compagnie entre deux dates
+use voyage_moldovan_miyuki;
+SELECT c.name, SUM(VV.prix) FROM companie c
+INNER JOIN conducteur c2 ON c.id = c2.companyId
+INNER JOIN CTT ON CTT.conducteurId = c2.id
+INNER JOIN trajet t ON t.id = CTT.trajetId
+INNER JOIN VT ON VT.trajetId = t.id
+INNER JOIN voyage v ON v.id = VT.voyageId
+INNER JOIN VV ON VV.voyageId = v.id
+WHERE `date_depart` BETWEEN '2017-01-01' AND '2018-01-01'
+GROUP BY c.name ;
+
+-- Nombre de voyageurs par voyage
+use voyage_moldovan_miyuki;
+SELECT v.name, COUNT(*) FROM voyage v
+INNER JOIN VV ON VV.voyageId = v.id
+INNER JOIN voyage v2 ON v2.id = VV.voyageId
+GROUP BY v.name ;
+
+-- Classement par réputation des compagnies
+SELECT c.name, SUM(VV.notation)/COUNT(*) as Reputation FROM companie c
+INNER JOIN conducteur c2 ON c.id = c2.companyId
+INNER JOIN CTT ON CTT.conducteurId = c2.id
+INNER JOIN trajet t ON t.id = CTT.trajetId
+INNER JOIN VT ON VT.trajetId = t.id
+INNER JOIN voyage v ON v.id = VT.voyageId
+INNER JOIN VV ON VV.voyageId = v.id
+GROUP BY c.name
+ORDER BY SUM(VV.notation)/COUNT(*) DESC;
+
+-- Les destinations et transports préférés des voyageurs
+SELECT * FROM ville v 
+INNER JOIN adresseVille av ON v.id = av.villeID
+INNER JOIN adresse a ON a.id = av.adresseID
+INNER JOIN trajet t ON t.AdresseArrveId = a.id
+GROUP BY v.name
+ORDER BY COUNT(*) DESC ;

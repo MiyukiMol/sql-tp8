@@ -1,0 +1,620 @@
+TP final - TP8
+Phase de mise en place
+
+--1-voyageCreateInsert.sql--
+DROP DATABASE IF EXISTS voyage_moldovan_miyuki;
+
+CREATE DATABASE voyage_moldovan_miyuki;
+
+use voyage_moldovan_miyuki;
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `Pays`;
+DROP TABLE IF EXISTS `Ville`;
+DROP TABLE IF EXISTS `Adresse`;
+DROP TABLE IF EXISTS `Trajet`;
+DROP TABLE IF EXISTS `Companie`;
+DROP TABLE IF EXISTS `Conducteur`;
+DROP TABLE IF EXISTS `Transport`;
+DROP TABLE IF EXISTS `TypeTransport`;
+DROP TABLE IF EXISTS `Personne`;
+DROP TABLE IF EXISTS `Voyageur`;
+DROP TABLE IF EXISTS `CTT`;
+DROP TABLE IF EXISTS `Voyage`;
+DROP TABLE IF EXISTS `Agence`;
+DROP TABLE IF EXISTS `AdresseVille`;
+DROP TABLE IF EXISTS `VV`;
+DROP TABLE IF EXISTS `VT`;
+SET FOREIGN_KEY_CHECKS = 1;
+
+CREATE TABLE `Pays` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE (`name`)
+);
+
+CREATE TABLE `Ville` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `PaysId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE (`name`)
+);
+
+CREATE TABLE `Adresse` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `label` TEXT NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `Trajet` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `date_depart` DATE NOT NULL,
+    `date_arrive` DATE NOT NULL,
+    `AdresseDepartId` INTEGER UNSIGNED NOT NULL,
+    `AdresseArriveId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `Companie` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `siegeId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `Conducteur` (
+    `id` INTEGER UNSIGNED NOT NULL,
+    `guid` VARCHAR(255) NOT NULL,
+    `companyId` INTEGER UNSIGNED NOT NULL,
+    `date_debut` DATE NOT NULL,
+    `date_fin` DATE NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE (`guid`)
+);
+
+CREATE TABLE `Transport` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `typeTransportId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `TypeTransport` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `label` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `Personne` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `firstname` VARCHAR(255) NOT NULL,
+    `lastname` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`)
+);
+
+CREATE TABLE `Voyageur` (
+    `id` INTEGER UNSIGNED NOT NULL,
+    `dossier` VARCHAR(30) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE (`dossier`)
+);
+
+CREATE TABLE `CTT` (
+    `conducteurId` INTEGER UNSIGNED NOT NULL,
+    `transportId` INTEGER UNSIGNED NOT NULL,
+    `trajetId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`conducteurId`, `transportId`, `trajetId`)
+);
+
+CREATE TABLE `Voyage` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE (`name`)
+);
+
+CREATE TABLE `Agence` (
+    `CompanieId` INTEGER UNSIGNED NOT NULL,
+    `AdresseId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`CompanieId`, `AdresseId`)
+);
+
+CREATE TABLE `AdresseVille` (
+    `VilleId` INTEGER UNSIGNED NOT NULL,
+    `AdresseId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`VilleId`, `AdresseId`)
+);
+
+CREATE TABLE `VV` (
+    `VoyageurId` INTEGER UNSIGNED NOT NULL,
+    `voyageId` INTEGER UNSIGNED NOT NULL,
+    `prix` DECIMAL NOT NULL,
+    `notation` INTEGER UNSIGNED,
+    PRIMARY KEY (`VoyageurId`, `voyageId`)
+);
+
+CREATE TABLE `VT` (
+    `voyageId` INTEGER UNSIGNED NOT NULL,
+    `trajetId` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`voyageId`, `trajetId`)
+);
+
+ALTER TABLE `Ville` ADD FOREIGN KEY FK_Ville_PaysId_Pays_id (`PaysId`) REFERENCES `Pays`(`id`);
+ALTER TABLE `Trajet` ADD FOREIGN KEY FK_Trajet_AdresseDepartId_Adresse_id (`AdresseDepartId`) REFERENCES `Adresse`(`id`);
+ALTER TABLE `Trajet` ADD FOREIGN KEY FK_Trajet_AdresseArriveId_Adresse_id (`AdresseArriveId`) REFERENCES `Adresse`(`id`);
+ALTER TABLE `Companie` ADD FOREIGN KEY FK_Companie_siegeId_Adresse_id (`siegeId`) REFERENCES `Adresse`(`id`);
+ALTER TABLE `Conducteur` ADD FOREIGN KEY FK_Conducteur_id_Personne_id (`id`) REFERENCES `Personne`(`id`);
+ALTER TABLE `Conducteur` ADD FOREIGN KEY FK_Conducteur_companyId_Companie_id (`companyId`) REFERENCES `Companie`(`id`);
+ALTER TABLE `Transport` ADD FOREIGN KEY FK_Transport_typeTransportId_TypeTransport_id (`typeTransportId`) REFERENCES `TypeTransport`(`id`);
+ALTER TABLE `Voyageur` ADD FOREIGN KEY FK_Voyageur_id_Personne_id (`id`) REFERENCES `Personne`(`id`);
+ALTER TABLE `CTT` ADD FOREIGN KEY FK_CTT_conducteurId_Conducteur_id (`conducteurId`) REFERENCES `Conducteur`(`id`);
+ALTER TABLE `CTT` ADD FOREIGN KEY FK_CTT_transportId_Transport_id (`transportId`) REFERENCES `Transport`(`id`);
+ALTER TABLE `CTT` ADD FOREIGN KEY FK_CTT_trajetId_Trajet_id (`trajetId`) REFERENCES `Trajet`(`id`);
+ALTER TABLE `Agence` ADD FOREIGN KEY FK_Agence_CompanieId_Companie_id (`CompanieId`) REFERENCES `Companie`(`id`);
+ALTER TABLE `Agence` ADD FOREIGN KEY FK_Agence_AdresseId_Adresse_id (`AdresseId`) REFERENCES `Adresse`(`id`);
+ALTER TABLE `AdresseVille` ADD FOREIGN KEY FK_AdresseVille_VilleId_PaysId_Ville_id (`VilleId`) REFERENCES `Ville`(`id`);
+ALTER TABLE `AdresseVille` ADD FOREIGN KEY FK_AdresseVille_AdresseId_PaysId_Adresse_id (`AdresseId`) REFERENCES `Adresse`(`id`);
+ALTER TABLE `VV` ADD FOREIGN KEY FK_VV_VoyageurId_Voyageur_id (`VoyageurId`) REFERENCES `Voyageur`(`id`);
+ALTER TABLE `VV` ADD FOREIGN KEY FK_VV_voyageId_Voyage_id (`voyageId`) REFERENCES `Voyage`(`id`);
+ALTER TABLE `VT` ADD FOREIGN KEY FK_VT_voyageId_Voyage_id (`voyageId`) REFERENCES `Voyage`(`id`);
+ALTER TABLE `VT` ADD FOREIGN KEY FK_VT_trajetId_Trajet_id (`trajetId`) REFERENCES `Trajet`(`id`);
+
+/* 400 Personne */
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Vielka","Cash"),("Neil","Rocha"),("Abel","Mccarthy"),("Baker","Howard"),("Buffy","Sanchez"),("Griffith","Small"),("Stacey","Mason"),("Arthur","Shepard"),("Cassandra","Hurley"),("Kay","Rogers");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Stacey","Mcgee"),("Dale","Lawrence"),("Natalie","Stephenson"),("Michelle","Hunt"),("Duncan","Bruce"),("Amery","Shields"),("Chantale","Johnson"),("Shaine","Cross"),("Cassady","Hodge"),("Alexa","Rutledge");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Joy","Dejesus"),("Sarah","Mooney"),("Delilah","Cruz"),("Emerson","Sellers"),("Maxwell","Moss"),("Geoffrey","Norris"),("Carla","Greene"),("Melanie","Aguirre"),("Andrew","Becker"),("Odessa","Gonzales");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Timon","Bowers"),("Bevis","Stark"),("Jesse","Berry"),("Henry","Howe"),("Cassidy","Slater"),("Paula","Olson"),("Zeph","Dickerson"),("Eden","Greene"),("Ria","Dillon"),("Porter","Schroeder");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Dillon","Massey"),("David","Parrish"),("Kenyon","Sosa"),("Halee","Holmes"),("Renee","Parrish"),("Brooke","Clark"),("Tamara","Ruiz"),("Farrah","Singleton"),("Jeanette","Tyson"),("Lucian","Byrd");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Jermaine","Malone"),("Kerry","Logan"),("Dominic","Willis"),("Clementine","Reed"),("Gavin","Mcneil"),("Barrett","Petty"),("Talon","Price"),("Julian","Joseph"),("Madeson","Chang"),("Felicia","Frederick");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Wallace","Burke"),("Peter","Stone"),("Doris","Mccarty"),("Perry","Kelly"),("Scarlett","Berger"),("Avye","Medina"),("Libby","Solis"),("Zane","Trevino"),("Benedict","Solomon"),("Tatum","Douglas");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Fatima","Palmer"),("Chaney","Workman"),("Karleigh","Mack"),("Gil","Myers"),("Aquila","Reed"),("Amity","Mcbride"),("Noble","Spears"),("Hop","Britt"),("Audrey","Martinez"),("Clayton","Knox");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Hadassah","Deleon"),("August","Mccoy"),("Kasimir","Tyson"),("Audra","Sweet"),("Lyle","Simpson"),("Davis","Moore"),("Alvin","Andrews"),("Simon","Hobbs"),("Kato","Frye"),("Blaze","Kirk");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Grace","Gentry"),("Dean","Tanner"),("Hayes","Santana"),("Ursa","Craig"),("Jesse","Morgan"),("Kathleen","Love"),("Bert","Conrad"),("Rajah","Mcbride"),("Harriet","Mcneil"),("Alexander","Osborn");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Deirdre","Lee"),("Flavia","Goff"),("Jena","Dale"),("Bruno","Howard"),("Ashely","Carlson"),("Harper","Glenn"),("Troy","Mason"),("Athena","Ferguson"),("Wang","Sellers"),("Cherokee","Higgins");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Mufutau","Cortez"),("Erin","Kaufman"),("Palmer","Jacobson"),("Reed","Ware"),("Norman","Carlson"),("Tarik","Cox"),("Glenna","Moran"),("Walker","Moreno"),("Talon","Wells"),("Serena","Hobbs");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Keiko","Frazier"),("Lael","Little"),("Savannah","Hoffman"),("Dane","Mills"),("Kalia","Moses"),("Vivien","Byrd"),("Linus","Dickerson"),("Lars","Nunez"),("Jerome","Stone"),("Kelsie","Cervantes");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Alana","Finch"),("Kamal","Mayer"),("Baker","Chase"),("Rafael","Strong"),("Jemima","Duran"),("Baker","Bush"),("Simon","Ortega"),("Jordan","Mendoza"),("Fallon","Joyner"),("Karleigh","Rowland");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Erin","Martinez"),("Yvonne","Russo"),("Nelle","Holmes"),("Wilma","Delaney"),("Zachery","Sellers"),("Dieter","Tillman"),("Channing","Hart"),("Elmo","Goodwin"),("Xavier","Moreno"),("Channing","Cervantes");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Stephen","Carlson"),("Charlotte","Bradshaw"),("Hedwig","Dodson"),("Kylee","Porter"),("Leonard","Mcdowell"),("Jameson","Warner"),("Karina","Barnes"),("Colt","Cunningham"),("Raymond","Orr"),("Ivor","Oneil");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("David","Buckley"),("Leandra","Stevens"),("Lance","Maxwell"),("Eagan","Hurst"),("Garrett","Erickson"),("Quamar","Grimes"),("Rogan","Neal"),("Mia","Ross"),("Ayanna","Watkins"),("Colette","Lawson");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Prescott","Palmer"),("Colorado","Santana"),("Brittany","Dillon"),("Orlando","Fuentes"),("Alana","Salazar"),("Clarke","Frazier"),("Dai","Guzman"),("Dai","Chavez"),("Arthur","Velez"),("Jonah","Becker");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Malik","Serrano"),("Abdul","Kerr"),("Linda","Tate"),("Jermaine","Norman"),("Tyler","Lopez"),("Rama","Lester"),("Cain","Salas"),("Shaine","Swanson"),("Rhona","Valentine"),("Wesley","Ferguson");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Jeanette","Lawrence"),("Cassady","Elliott"),("Cedric","Hardy"),("Dane","Bentley"),("Ella","Ellis"),("Elliott","Hardy"),("Haviva","Travis"),("Andrew","Head"),("Price","Buckley"),("George","Newman");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Lila","Jacobs"),("Miriam","Padilla"),("Fay","Griffith"),("Amanda","Gibson"),("Herman","Ellison"),("Bernard","White"),("Oliver","Parks"),("Maite","Dotson"),("Signe","Michael"),("Cameron","Henderson");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Quin","Boone"),("Gretchen","Sharp"),("Rogan","Donovan"),("Demetria","Franco"),("Alexander","Miles"),("Price","Hardy"),("Ezekiel","Wolf"),("Dorothy","Spence"),("Scarlet","Snow"),("Stewart","Cohen");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Dorothy","Bullock"),("Charity","Harmon"),("Ocean","Woodard"),("Ivor","Cochran"),("Elliott","Cannon"),("Baker","Bridges"),("Dorothy","Farley"),("Beck","Rosa"),("Claire","Gould"),("Aphrodite","Kaufman");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Eugenia","Golden"),("Magee","Wade"),("Rashad","Wooten"),("Molly","Neal"),("Beau","Raymond"),("Brody","Hendricks"),("Kenneth","Hawkins"),("Lilah","Vargas"),("Regan","Mccarty"),("Richard","Bush");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Keiko","Elliott"),("Claire","Herman"),("Lila","Guerra"),("Jackson","Talley"),("Mari","Salas"),("Drake","Henry"),("Flynn","Horton"),("Maris","Ayala"),("Gareth","Dudley"),("David","Higgins");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Brady","Barber"),("Desiree","Clemons"),("Sonia","Owen"),("Zeus","Roberts"),("Hop","Fulton"),("John","Alvarez"),("Patience","Cooke"),("Colin","Case"),("Remedios","Williamson"),("Jeanette","Lang");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Hyacinth","Valencia"),("Christen","Christian"),("Murphy","Sharpe"),("Kay","Curtis"),("Fletcher","Davis"),("Donna","Vang"),("Kathleen","Schultz"),("Carlos","Rodriguez"),("Anika","Burgess"),("Tyrone","Haney");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Blaine","Maynard"),("Abra","Beard"),("Amity","Hubbard"),("Ima","Dillon"),("Chastity","Atkinson"),("Quamar","Weiss"),("Wilma","Keith"),("Jenette","Black"),("Martina","Dejesus"),("Ella","Fernandez");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Rogan","Mendoza"),("Lester","Ewing"),("Gil","Hoffman"),("Piper","Shelton"),("Shea","Brooks"),("Breanna","Mcclure"),("Quynn","Noble"),("Fatima","Sellers"),("Maxwell","Ellison"),("Jaden","Walters");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Yvette","Lowery"),("Kessie","Campos"),("Amena","Johnson"),("Karleigh","Stafford"),("Petra","Scott"),("Amir","Black"),("Florence","Petty"),("Dolan","Underwood"),("Omar","Moon"),("Kibo","Maldonado");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Illana","Jacobs"),("Ralph","Nash"),("Shoshana","Branch"),("Ciaran","Calderon"),("Francis","Mullins"),("Zeus","Obrien"),("Dominique","Lewis"),("Mollie","Stout"),("Conan","Diaz"),("Anthony","Estes");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Josiah","Mckinney"),("Brody","Pacheco"),("Keane","Herrera"),("Jonas","Yates"),("Isabella","Roth"),("Matthew","Serrano"),("Ferdinand","Hicks"),("Sydney","Logan"),("Orlando","Mcgee"),("Perry","Gilliam");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Juliet","Woods"),("Molly","Fleming"),("Thaddeus","Nicholson"),("Buckminster","Lamb"),("Nola","Rowland"),("Simone","Mayer"),("Ruby","Willis"),("Chelsea","Rollins"),("Zelda","Schmidt"),("Hayley","Durham");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Castor","Casey"),("Noelani","Adams"),("Jessamine","Bruce"),("Alea","Riggs"),("Kermit","Beck"),("Chancellor","Sharp"),("Sacha","Delgado"),("Nissim","Daugherty"),("Laura","Key"),("Carter","Bradford");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Irene","Blankenship"),("Ira","Wood"),("Chiquita","Cain"),("Yael","Atkins"),("Cheyenne","Cote"),("Raymond","Lane"),("Sloane","Larson"),("Sage","Duke"),("Madeline","Sargent"),("Colin","Berg");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Cathleen","Collins"),("Hayfa","Foster"),("Cooper","Vincent"),("Sarah","Hodge"),("Driscoll","Keith"),("Karina","Stokes"),("Yuli","Middleton"),("Melvin","Hinton"),("Ayanna","Rodriquez"),("Mariko","Mathews");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Zeph","Hobbs"),("Yen","Lindsey"),("Christine","Santos"),("Trevor","Walters"),("Brenna","Johnson"),("Shannon","Bell"),("Noble","Cummings"),("Jescie","Hebert"),("Dexter","Ferguson"),("Chase","Mueller");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Heather","King"),("Tyrone","Sullivan"),("Denton","Cohen"),("Penelope","Hubbard"),("Unity","Solis"),("Aquila","Stephens"),("Ava","Maxwell"),("Lunea","Chan"),("Quinn","Holder"),("McKenzie","Morton");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Hayley","Callahan"),("Reagan","Weber"),("Tatum","Mcclure"),("Ursula","Riley"),("Karina","Church"),("Duncan","Schwartz"),("Cheryl","Espinoza"),("Heather","Fuentes"),("Sonya","Barron"),("Maggie","Weiss");
+INSERT INTO `Personne` (`firstname`,`lastname`) VALUES ("Iona","Conley"),("Echo","Lancaster"),("Maxwell","Melton"),("MacKenzie","Olsen"),("Emery","Washington"),("Donovan","Mason"),("Basil","Torres"),("Ryan","Dawson"),("Kylan","Turner"),("Nicole","Kim");
+
+
+/* 360 Voyageurs */
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("RES21HDN4BN",41),("QEG34TYH6ZO",42),("TPY70KPD6OO",43),("KDS79BZC3RH",44),("MGM40RPX9BN",45),("VUV94YVH0CH",46),("RSO72JAQ1BH",47),("NCU50JYQ1MH",48),("WCK47LMZ6ZY",49),("MOF24CAO3MV",50);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("GZG30FRD8QY",51),("TLY05BIE3MM",52),("MIP59OIR9FE",53),("WRP48TDH6VS",54),("CHV19EAU8MI",55),("JIN48SBL8DC",56),("OUL02BXA9AK",57),("VBH15OZF1SI",58),("VOG77ENJ3FC",59),("AFJ06MGZ2SR",60);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("VQZ37QLF5LV",61),("MSB47XDR2WQ",62),("SGQ37VVP9ES",63),("HBJ18YZT0ME",64),("OQN76JOJ5TY",65),("FEO63WYQ1LI",66),("PLO51LCG4FA",67),("QQM31FNR2IW",68),("FPJ07SBX6VD",69),("SNB98VOM4UY",70);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("YZI19VFK9MM",71),("YAF77BID5DG",72),("VPM85GZC8QB",73),("TPY40GWQ4SG",74),("ANA76XIU2BQ",75),("RFQ11QCB4DS",76),("GWW76DSB1XL",77),("ULH54FTG4PO",78),("BLW58EDD4ZZ",79),("NDH58HVV3ID",80);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("XNR14LAN9QL",81),("GVZ97BSX4HN",82),("XZX50ECG9EL",83),("AYS83YJD0IT",84),("XQH93GOH2KR",85),("VIH96CNE1FJ",86),("LUF76NQK3OK",87),("RLD63HSC6GF",88),("KYK91UZD7HG",89),("NTW78DBJ2JJ",90);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("ZCV51EXS7WQ",91),("AAK36FPN3ZB",92),("GOY45BBC3CA",93),("MIW92HOL4LM",94),("SDR09GXM1TX",95),("CYG17DBK1ES",96),("YVP11LGV6SK",97),("BWJ19QUR1NG",98),("GGL90MKH3SS",99),("KVK90LEH5VT",100);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("MPH59XBK4LG",101),("ALH61OPI9RX",102),("VOW91TIL1UW",103),("CIO45DKO4RF",104),("TFB22GVD2QO",105),("WQY96WTV3SS",106),("ZQX61NDP8FD",107),("KNO45DUD6WZ",108),("NYM58QLH8TS",109),("OQZ36JQQ6PN",110);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("AJL41IVS2JM",111),("ROH19DGJ3GR",112),("VKO15JDG5FJ",113),("ZIW27KIK3AS",114),("IBT39CNT7AY",115),("HYB01TPY8IR",116),("DAH43QSK1HL",117),("TRJ51VAQ2GY",118),("KUM37OXI6AK",119),("ZWY52SMI1GV",120);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("IIH37XXC9UO",121),("XGD92HLY6YO",122),("SKX80GBN1ZY",123),("EDJ65MVC0VF",124),("KCU47CDX8LQ",125),("KON46MSF8DQ",126),("ZBC84IHW5SS",127),("NKH89YRK7KJ",128),("OXV20ORX6GP",129),("VBJ51SEL4UJ",130);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("ECH39BXF3MT",131),("JJY63FON2PO",132),("AJQ56SRO8IN",133),("XSU43XNH3LG",134),("LPQ11PPK3CU",135),("IDW73OJJ5FW",136),("KSC98XYX1SP",137),("VZE71SNP3ZO",138),("JFQ11LLM7RX",139),("CXF83HRC4KJ",140);
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (141,"CGA56ODS2DR"),(142,"QVM67MAT0NE"),(143,"UEX73SVS8UX"),(144,"YXY80WLL8AN"),(145,"WUA81HMO1SS"),(146,"FYH56BXF6VM"),(147,"NEC29WLC3BC"),(148,"EIO85KIQ6OY"),(149,"VCJ53CPI1ZU"),(150,"BOC36VZV4FQ");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (151,"CIX70LRT0KW"),(152,"KLB71NLF8FG"),(153,"XJQ90GSA6KO"),(154,"VAM15TMH7VY"),(155,"NOP62NQW2BG"),(156,"VOW00KEW3VJ"),(157,"MFE89YYV0TB"),(158,"WWU32JAH8OM"),(159,"SYU73LXF9KG"),(160,"WMR59XQA0CF");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (161,"WIL59TLH8UA"),(162,"PXP61KUD3SI"),(163,"LON27UUO9ZK"),(164,"OLN29ENE8BS"),(165,"GVN49RQY6HM"),(166,"JZT54BXG7QE"),(167,"CGG76VTE9CM"),(168,"QLL60OYH9YO"),(169,"OVX32UKT6CP"),(170,"XTJ81EFV2SN");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (171,"FCL15OLJ5FD"),(172,"XKJ90ESQ6IJ"),(173,"GZB07ZED9IU"),(174,"XEQ36EJG0YE"),(175,"AKJ92ZIU6ZV"),(176,"MAF03TGL9FU"),(177,"HTS00DHR9ZT"),(178,"XSO33SZA9SP"),(179,"WUA30WHL5XU"),(180,"IKN67EMG7TR");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (181,"IDL60MNO3JQ"),(182,"SPL22TVW9US"),(183,"NWZ79ZGK5DG"),(184,"HRX74ZCI3DU"),(185,"ITL26QCM8AN"),(186,"NPE60UEO1EV"),(187,"NLV06SRL1HI"),(188,"TSN48MYU1IS"),(189,"IAG97GUZ4GP"),(190,"DZQ52JHW3MW");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (191,"LCZ16UPJ8FC"),(192,"DBL81WTN0UO"),(193,"VXE09ZFY8IQ"),(194,"AXY60WNP3EK"),(195,"VXY32QBA1LJ"),(196,"QIR15IRP7SQ"),(197,"AOO68CEX5HQ"),(198,"CVG47YPZ9DB"),(199,"UST54XKO8NV"),(200,"SYO14PXS3ZJ");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (201,"YWQ39EBN6QQ"),(202,"GUX48AVS0KP"),(203,"OUR89VAO1ZS"),(204,"UGV98IJB6VJ"),(205,"RHX37CFQ9AI"),(206,"QEY60RDB4DK"),(207,"GRY87GGE1SF"),(208,"VGT40FAT2OP"),(209,"IYG13YNU0SR"),(210,"MNI31ZRW6JJ");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (211,"RYP28QNB3BI"),(212,"TOX71GBK8OG"),(213,"KWU82WXK9WT"),(214,"EWO07HKW8ZB"),(215,"SDX65PKR6QS"),(216,"TES41JHM9WJ"),(217,"JKF27PBZ6EX"),(218,"IYH53BFI8LS"),(219,"DZP89XXI6PQ"),(220,"NGM59MVO4TL");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (221,"UWH87EPK9KN"),(222,"HDB29QPO9TE"),(223,"ESW86FKZ9UQ"),(224,"EFP91PSZ4NN"),(225,"ADG03JLL2CE"),(226,"JKS79ZWH4MS"),(227,"DDQ44IGR7OM"),(228,"SEG36LGD5RC"),(229,"WMA62CKO2RC"),(230,"QFX74BHY9FN");
+INSERT INTO `Voyageur` (`id`,`dossier`) VALUES (231,"FLR25FHT1SS"),(232,"XOZ40BDX4OB"),(233,"AOX51XDJ1LD"),(234,"MXS68UFZ3JI"),(235,"IFC84FED0AV"),(236,"HXX09SIC8CG"),(237,"HMU52AAZ1VK"),(238,"JWI75HGK4EP"),(239,"DBH85SIC1IL"),(240,"SWA11SEB2GF");
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("NMN70NJQ4II",241),("XNI50UQV0HQ",242),("MUW42JJA3MO",243),("WBX88AYU3CT",244),("XDJ62VCF6AL",245),("PWH61RNC4PE",246),("RLM33WFS7RG",247),("XCE87QHV1LH",248),("NXI50IQR1FQ",249),("UPL08HSJ5PC",250);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("ZJG27HWQ1PH",251),("VAC77SUD9WZ",252),("XXK39ZYR1KY",253),("QOL69ENZ8GS",254),("USQ11JXD3ZT",255),("MEC81YTX4RO",256),("MMS74XJA9SS",257),("CGU24EJI3DH",258),("FTQ97VIA8TJ",259),("OIP30XSM3BI",260);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("GWB43CUY3WW",261),("TXL86RUS0RT",262),("YPR77YYN3LK",263),("JFA21CCI0FJ",264),("WHL84GDE1GJ",265),("YAN52NPJ1WZ",266),("ABY82CTQ1GC",267),("EZV62OEH5DL",268),("HDF77AZF9BT",269),("VMJ72ORK3RL",270);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("TDT41MIO0GS",271),("LER73KDD1WO",272),("HEW43SJU2EL",273),("GNX43PAQ5WW",274),("QKQ86EQA0KF",275),("TUH08FWY4RG",276),("HFC04FCO7BI",277),("NJP47ORZ4CF",278),("RYL61XOZ4FO",279),("YCY46SHE8BU",280);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("PZS12OQW1JS",281),("XQS79WRH6FK",282),("IYP15IEM8CM",283),("HHP09AXZ2NS",284),("HHJ16IJA3HI",285),("AYM14DPH7PI",286),("YSV78LHW0IN",287),("KAX30YFR0UX",288),("ZZN73WVV9PJ",289),("FJA97CAI1GO",290);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("HTH15ANN5UO",291),("JYE80EVW3OD",292),("JZS02YQU6JG",293),("LYL58HET0TB",294),("TLF19RFP1VS",295),("CXU31DOL3QR",296),("PTT56JSN5LI",297),("DLH40TOV9FJ",298),("SVN53GOY8RT",299),("PCF20MZP1JR",300);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("YRL65SRT1UN",301),("FDD32RBJ7JC",302),("IWL43BLR7CA",303),("UKZ32BWE2LV",304),("TAI98GWC4UX",305),("JMN40VRK9MU",306),("XMC27EER8MZ",307),("TOR40VFW2TR",308),("ZBS37IHK8CA",309),("OZZ21HTZ2GE",310);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("GUX99FYR4HK",311),("KBC33KXD9RM",312),("OWZ60GRF9TY",313),("FXY15PGM9IZ",314),("NGL40TRP4FW",315),("JPG63EXY5WX",316),("MCD09SYP3QU",317),("NXP34IFL8AZ",318),("XHZ10NWO9JR",319),("YRQ88XKU9JT",320);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("YXM40URK6OO",321),("DYQ57XYA3EC",322),("SFZ94MKW9GV",323),("VQA41XMS8JR",324),("XCL90WWD4KI",325),("ZHM12AGP3YU",326),("GXL89LAJ3NL",327),("GSB65HNT7GX",328),("NQV96GGR9UT",329),("CKW71QED9SA",330);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("DBE14QBX0VC",331),("ZFO50DVC5DV",332),("FCV00TEW8WA",333),("HKM35WBW0AK",334),("WFD76YVZ5BN",335),("RDU01ERN9BE",336),("ZCG20JZW3SH",337),("BPR35LMX3RH",338),("PUK96YLC9OY",339),("VYP76ENY3JF",340);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("YHC17FUZ6DR",341),("SAL32CEZ2BM",342),("RRS91KYY0WV",343),("LSE14ONX8UE",344),("NBS90KMJ4GH",345),("BYP71DSI6BV",346),("HNH27CKH2LY",347),("FBM22HLY1WD",348),("ITK97MOK3HW",349),("SBH10YHG1PO",350);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("WMQ73LEH6AB",351),("FJY13DEZ4CG",352),("QDZ75YXC5AN",353),("PMX51MBD4IJ",354),("FTE29NIC2PH",355),("IMS26POA7IB",356),("ZQS47ZDT2ET",357),("CYQ10PIY3EU",358),("VAX66BMP3JC",359),("PRK88MQA8JR",360);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("YAT28AEC8XF",361),("FTF36SJJ3AA",362),("MZH08LBU9QF",363),("SBH65IQT5US",364),("GZN71WWO9QI",365),("CLS37BJS0ZZ",366),("MAI35GDU5IU",367),("BDP67XFL3WZ",368),("HMO39UZD3UJ",369),("HFK27UHC5SW",370);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("HQL19EKB8GU",371),("IVR80UVU2TC",372),("ANF98NFX6CG",373),("LIE31XGH6RG",374),("NCE30PIO5LJ",375),("BRO19ZAC1MZ",376),("ZTT32BFA2CD",377),("JKG18WMP6DS",378),("NRK95YIN0TY",379),("EMP07LTU2ME",380);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("RSM44TUH6BM",381),("XOA28QVZ0NG",382),("WNO00NRA9TV",383),("CJF51CYX9KU",384),("FOM20EST3ZX",385),("JKI65TCD9AB",386),("GOZ02NWI4SJ",387),("QMD60RFK0OQ",388),("FZT67CRJ5GM",389),("LXU19TGG6SG",390);
+INSERT INTO `Voyageur` (`dossier`,`id`) VALUES ("HXT68EQR8VC",391),("SBS51DMJ2QR",392),("KIW42ZCQ1IF",393),("YWH77XQW7OQ",394),("JEM96QTL8PQ",395),("TKD82RPW4YQ",396),("IBO72MFD7SY",397),("DYH79KFD3GS",398),("LHU20KGS9NM",399),("ETO95OEM6WY",400);
+
+
+
+/* PAYS */
+INSERT INTO `Pays` VALUES (null, 'Afghanistan');
+INSERT INTO `Pays` VALUES (null, 'Albania');
+INSERT INTO `Pays` VALUES (null, 'Algeria');
+INSERT INTO `Pays` VALUES (null, 'American Samoa');
+INSERT INTO `Pays` VALUES (null, 'Andorra');
+INSERT INTO `Pays` VALUES (null, 'Angola');
+INSERT INTO `Pays` VALUES (null, 'Anguilla');
+INSERT INTO `Pays` VALUES (null, 'Antarctica');
+INSERT INTO `Pays` VALUES (null, 'Antigua and Barbuda');
+INSERT INTO `Pays` VALUES (null, 'Argentina');
+INSERT INTO `Pays` VALUES (null, 'Armenia');
+INSERT INTO `Pays` VALUES (null, 'Aruba');
+INSERT INTO `Pays` VALUES (null, 'Australia');
+INSERT INTO `Pays` VALUES (null, 'Austria');
+INSERT INTO `Pays` VALUES (null, 'Azerbaijan');
+INSERT INTO `Pays` VALUES (null, 'Bahamas');
+INSERT INTO `Pays` VALUES (null, 'Bahrain');
+INSERT INTO `Pays` VALUES (null, 'Bangladesh');
+INSERT INTO `Pays` VALUES (null, 'Barbados');
+INSERT INTO `Pays` VALUES (null, 'Belarus');
+INSERT INTO `Pays` VALUES (null, 'Belgium');
+INSERT INTO `Pays` VALUES (null, 'Belize');
+INSERT INTO `Pays` VALUES (null, 'Benin');
+INSERT INTO `Pays` VALUES (null, 'Bermuda');
+INSERT INTO `Pays` VALUES (null, 'Bhutan');
+INSERT INTO `Pays` VALUES (null, 'Bolivia');
+INSERT INTO `Pays` VALUES (null, 'Bosnia and Herzegovina');
+INSERT INTO `Pays` VALUES (null, 'Botswana');
+INSERT INTO `Pays` VALUES (null, 'Bouvet Island');
+INSERT INTO `Pays` VALUES (null, 'Brazil');
+INSERT INTO `Pays` VALUES (null, 'British Indian Ocean Territory');
+INSERT INTO `Pays` VALUES (null, 'Brunei Darussalam');
+INSERT INTO `Pays` VALUES (null, 'Bulgaria');
+INSERT INTO `Pays` VALUES (null, 'Burkina Faso');
+INSERT INTO `Pays` VALUES (null, 'Burundi');
+INSERT INTO `Pays` VALUES (null, 'Cambodia');
+INSERT INTO `Pays` VALUES (null, 'Cameroon');
+INSERT INTO `Pays` VALUES (null, 'Canada');
+INSERT INTO `Pays` VALUES (null, 'Cape Verde');
+INSERT INTO `Pays` VALUES (null, 'Cayman Islands');
+INSERT INTO `Pays` VALUES (null, 'Central African Republic');
+INSERT INTO `Pays` VALUES (null, 'Chad');
+INSERT INTO `Pays` VALUES (null, 'Chile');
+INSERT INTO `Pays` VALUES (null, 'China');
+INSERT INTO `Pays` VALUES (null, 'Christmas Island');
+INSERT INTO `Pays` VALUES (null, 'Cocos (Keeling) Islands');
+INSERT INTO `Pays` VALUES (null, 'Colombia');
+INSERT INTO `Pays` VALUES (null, 'Comoros');
+INSERT INTO `Pays` VALUES (null, 'Congo');
+INSERT INTO `Pays` VALUES (null, 'Cook Islands');
+INSERT INTO `Pays` VALUES (null, 'Costa Rica');
+INSERT INTO `Pays` VALUES (null, 'Croatia (Hrvatska)');
+INSERT INTO `Pays` VALUES (null, 'Cuba');
+INSERT INTO `Pays` VALUES (null, 'Cyprus');
+INSERT INTO `Pays` VALUES (null, 'Czech Republic');
+INSERT INTO `Pays` VALUES (null, 'Denmark');
+INSERT INTO `Pays` VALUES (null, 'Djibouti');
+INSERT INTO `Pays` VALUES (null, 'Dominica');
+INSERT INTO `Pays` VALUES (null, 'Dominican Republic');
+INSERT INTO `Pays` VALUES (null, 'East Timor');
+INSERT INTO `Pays` VALUES (null, 'Ecuador');
+INSERT INTO `Pays` VALUES (null, 'Egypt');
+INSERT INTO `Pays` VALUES (null, 'El Salvador');
+INSERT INTO `Pays` VALUES (null, 'Equatorial Guinea');
+INSERT INTO `Pays` VALUES (null, 'Eritrea');
+INSERT INTO `Pays` VALUES (null, 'Estonia');
+INSERT INTO `Pays` VALUES (null, 'Ethiopia');
+INSERT INTO `Pays` VALUES (null, 'Falkland Islands (Malvinas)');
+INSERT INTO `Pays` VALUES (null, 'Faroe Islands');
+INSERT INTO `Pays` VALUES (null, 'Fiji');
+INSERT INTO `Pays` VALUES (null, 'Finland');
+INSERT INTO `Pays` VALUES (null, 'France');
+INSERT INTO `Pays` VALUES (null, 'France, Metropolitan');
+INSERT INTO `Pays` VALUES (null, 'French Guiana');
+INSERT INTO `Pays` VALUES (null, 'French Polynesia');
+INSERT INTO `Pays` VALUES (null, 'French Southern Territories');
+INSERT INTO `Pays` VALUES (null, 'Gabon');
+INSERT INTO `Pays` VALUES (null, 'Gambia');
+INSERT INTO `Pays` VALUES (null, 'Georgia');
+INSERT INTO `Pays` VALUES (null, 'Germany');
+INSERT INTO `Pays` VALUES (null, 'Ghana');
+INSERT INTO `Pays` VALUES (null, 'Gibraltar');
+INSERT INTO `Pays` VALUES (null, 'Guernsey');
+INSERT INTO `Pays` VALUES (null, 'Greece');
+INSERT INTO `Pays` VALUES (null, 'Greenland');
+INSERT INTO `Pays` VALUES (null, 'Grenada');
+INSERT INTO `Pays` VALUES (null, 'Guadeloupe');
+INSERT INTO `Pays` VALUES (null, 'Guam');
+INSERT INTO `Pays` VALUES (null, 'Guatemala');
+INSERT INTO `Pays` VALUES (null, 'Guinea');
+INSERT INTO `Pays` VALUES (null, 'Guinea-Bissau');
+INSERT INTO `Pays` VALUES (null, 'Guyana');
+INSERT INTO `Pays` VALUES (null, 'Haiti');
+INSERT INTO `Pays` VALUES (null, 'Heard and Mc Donald Islands');
+INSERT INTO `Pays` VALUES (null, 'Honduras');
+INSERT INTO `Pays` VALUES (null, 'Hong Kong');
+INSERT INTO `Pays` VALUES (null, 'Hungary');
+INSERT INTO `Pays` VALUES (null, 'Iceland');
+INSERT INTO `Pays` VALUES (null, 'India');
+INSERT INTO `Pays` VALUES (null, 'Isle of Man');
+INSERT INTO `Pays` VALUES (null, 'Indonesia');
+INSERT INTO `Pays` VALUES (null, 'Iran (Islamic Republic of)');
+INSERT INTO `Pays` VALUES (null, 'Iraq');
+INSERT INTO `Pays` VALUES (null, 'Ireland');
+INSERT INTO `Pays` VALUES (null, 'Israel');
+INSERT INTO `Pays` VALUES (null, 'Italy');
+INSERT INTO `Pays` VALUES (null, 'Ivory Coast');
+INSERT INTO `Pays` VALUES (null, 'Jersey');
+INSERT INTO `Pays` VALUES (null, 'Jamaica');
+INSERT INTO `Pays` VALUES (null, 'Japan');
+INSERT INTO `Pays` VALUES (null, 'Jordan');
+INSERT INTO `Pays` VALUES (null, 'Kazakhstan');
+INSERT INTO `Pays` VALUES (null, 'Kenya');
+INSERT INTO `Pays` VALUES (null, 'Kiribati');
+INSERT INTO `Pays` VALUES (null, 'Korea, Democratic People''s Republic of');
+INSERT INTO `Pays` VALUES (null, 'Korea, Republic of');
+INSERT INTO `Pays` VALUES (null, 'Kosovo');
+INSERT INTO `Pays` VALUES (null, 'Kuwait');
+INSERT INTO `Pays` VALUES (null, 'Kyrgyzstan');
+INSERT INTO `Pays` VALUES (null, 'Lao People''s Democratic Republic');
+INSERT INTO `Pays` VALUES (null, 'Latvia');
+INSERT INTO `Pays` VALUES (null, 'Lebanon');
+INSERT INTO `Pays` VALUES (null, 'Lesotho');
+INSERT INTO `Pays` VALUES (null, 'Liberia');
+INSERT INTO `Pays` VALUES (null, 'Libyan Arab Jamahiriya');
+INSERT INTO `Pays` VALUES (null, 'Liechtenstein');
+INSERT INTO `Pays` VALUES (null, 'Lithuania');
+INSERT INTO `Pays` VALUES (null, 'Luxembourg');
+INSERT INTO `Pays` VALUES (null, 'Macau');
+INSERT INTO `Pays` VALUES (null, 'Macedonia');
+INSERT INTO `Pays` VALUES (null, 'Madagascar');
+INSERT INTO `Pays` VALUES (null, 'Malawi');
+INSERT INTO `Pays` VALUES (null, 'Malaysia');
+INSERT INTO `Pays` VALUES (null, 'Maldives');
+INSERT INTO `Pays` VALUES (null, 'Mali');
+INSERT INTO `Pays` VALUES (null, 'Malta');
+INSERT INTO `Pays` VALUES (null, 'Marshall Islands');
+INSERT INTO `Pays` VALUES (null, 'Martinique');
+INSERT INTO `Pays` VALUES (null, 'Mauritania');
+INSERT INTO `Pays` VALUES (null, 'Mauritius');
+INSERT INTO `Pays` VALUES (null, 'Mayotte');
+INSERT INTO `Pays` VALUES (null, 'Mexico');
+INSERT INTO `Pays` VALUES (null, 'Micronesia, Federated States of');
+INSERT INTO `Pays` VALUES (null, 'Moldova, Republic of');
+INSERT INTO `Pays` VALUES (null, 'Monaco');
+INSERT INTO `Pays` VALUES (null, 'Mongolia');
+INSERT INTO `Pays` VALUES (null, 'Montenegro');
+INSERT INTO `Pays` VALUES (null, 'Montserrat');
+INSERT INTO `Pays` VALUES (null, 'Morocco');
+INSERT INTO `Pays` VALUES (null, 'Mozambique');
+INSERT INTO `Pays` VALUES (null, 'Myanmar');
+INSERT INTO `Pays` VALUES (null, 'Namibia');
+INSERT INTO `Pays` VALUES (null, 'Nauru');
+INSERT INTO `Pays` VALUES (null, 'Nepal');
+INSERT INTO `Pays` VALUES (null, 'Netherlands');
+INSERT INTO `Pays` VALUES (null, 'Netherlands Antilles');
+INSERT INTO `Pays` VALUES (null, 'New Caledonia');
+INSERT INTO `Pays` VALUES (null, 'New Zealand');
+INSERT INTO `Pays` VALUES (null, 'Nicaragua');
+INSERT INTO `Pays` VALUES (null, 'Niger');
+INSERT INTO `Pays` VALUES (null, 'Nigeria');
+INSERT INTO `Pays` VALUES (null, 'Niue');
+INSERT INTO `Pays` VALUES (null, 'Norfolk Island');
+INSERT INTO `Pays` VALUES (null, 'Northern Mariana Islands');
+INSERT INTO `Pays` VALUES (null, 'Norway');
+INSERT INTO `Pays` VALUES (null, 'Oman');
+INSERT INTO `Pays` VALUES (null, 'Pakistan');
+INSERT INTO `Pays` VALUES (null, 'Palau');
+INSERT INTO `Pays` VALUES (null, 'Palestine');
+INSERT INTO `Pays` VALUES (null, 'Panama');
+INSERT INTO `Pays` VALUES (null, 'Papua New Guinea');
+INSERT INTO `Pays` VALUES (null, 'Paraguay');
+INSERT INTO `Pays` VALUES (null, 'Peru');
+INSERT INTO `Pays` VALUES (null, 'Philippines');
+INSERT INTO `Pays` VALUES (null, 'Pitcairn');
+INSERT INTO `Pays` VALUES (null, 'Poland');
+INSERT INTO `Pays` VALUES (null, 'Portugal');
+INSERT INTO `Pays` VALUES (null, 'Puerto Rico');
+INSERT INTO `Pays` VALUES (null, 'Qatar');
+INSERT INTO `Pays` VALUES (null, 'Reunion');
+INSERT INTO `Pays` VALUES (null, 'Romania');
+INSERT INTO `Pays` VALUES (null, 'Russian Federation');
+INSERT INTO `Pays` VALUES (null, 'Rwanda');
+INSERT INTO `Pays` VALUES (null, 'Saint Kitts and Nevis');
+INSERT INTO `Pays` VALUES (null, 'Saint Lucia');
+INSERT INTO `Pays` VALUES (null, 'Saint Vincent and the Grenadines');
+INSERT INTO `Pays` VALUES (null, 'Samoa');
+INSERT INTO `Pays` VALUES (null, 'San Marino');
+INSERT INTO `Pays` VALUES (null, 'Sao Tome and Principe');
+INSERT INTO `Pays` VALUES (null, 'Saudi Arabia');
+INSERT INTO `Pays` VALUES (null, 'Senegal');
+INSERT INTO `Pays` VALUES (null, 'Serbia');
+INSERT INTO `Pays` VALUES (null, 'Seychelles');
+INSERT INTO `Pays` VALUES (null, 'Sierra Leone');
+INSERT INTO `Pays` VALUES (null, 'Singapore');
+INSERT INTO `Pays` VALUES (null, 'Slovakia');
+INSERT INTO `Pays` VALUES (null, 'Slovenia');
+INSERT INTO `Pays` VALUES (null, 'Solomon Islands');
+INSERT INTO `Pays` VALUES (null, 'Somalia');
+INSERT INTO `Pays` VALUES (null, 'South Africa');
+INSERT INTO `Pays` VALUES (null, 'South Georgia South Sandwich Islands');
+INSERT INTO `Pays` VALUES (null, 'South Sudan');
+INSERT INTO `Pays` VALUES (null, 'Spain');
+INSERT INTO `Pays` VALUES (null, 'Sri Lanka');
+INSERT INTO `Pays` VALUES (null, 'St. Helena');
+INSERT INTO `Pays` VALUES (null, 'St. Pierre and Miquelon');
+INSERT INTO `Pays` VALUES (null, 'Sudan');
+INSERT INTO `Pays` VALUES (null, 'Suriname');
+INSERT INTO `Pays` VALUES (null, 'Svalbard and Jan Mayen Islands');
+INSERT INTO `Pays` VALUES (null, 'Swaziland');
+INSERT INTO `Pays` VALUES (null, 'Sweden');
+INSERT INTO `Pays` VALUES (null, 'Switzerland');
+INSERT INTO `Pays` VALUES (null, 'Syrian Arab Republic');
+INSERT INTO `Pays` VALUES (null, 'Taiwan');
+INSERT INTO `Pays` VALUES (null, 'Tajikistan');
+INSERT INTO `Pays` VALUES (null, 'Tanzania, United Republic of');
+INSERT INTO `Pays` VALUES (null, 'Thailand');
+INSERT INTO `Pays` VALUES (null, 'Togo');
+INSERT INTO `Pays` VALUES (null, 'Tokelau');
+INSERT INTO `Pays` VALUES (null, 'Tonga');
+INSERT INTO `Pays` VALUES (null, 'Trinidad and Tobago');
+INSERT INTO `Pays` VALUES (null, 'Tunisia');
+INSERT INTO `Pays` VALUES (null, 'Turkey');
+INSERT INTO `Pays` VALUES (null, 'Turkmenistan');
+INSERT INTO `Pays` VALUES (null, 'Turks and Caicos Islands');
+INSERT INTO `Pays` VALUES (null, 'Tuvalu');
+INSERT INTO `Pays` VALUES (null, 'Uganda');
+INSERT INTO `Pays` VALUES (null, 'Ukraine');
+INSERT INTO `Pays` VALUES (null, 'United Arab Emirates');
+INSERT INTO `Pays` VALUES (null, 'United Kingdom');
+INSERT INTO `Pays` VALUES (null, 'United States');
+INSERT INTO `Pays` VALUES (null, 'United States minor outlying islands');
+INSERT INTO `Pays` VALUES (null, 'Uruguay');
+INSERT INTO `Pays` VALUES (null, 'Uzbekistan');
+INSERT INTO `Pays` VALUES (null, 'Vanuatu');
+INSERT INTO `Pays` VALUES (null, 'Vatican City State');
+INSERT INTO `Pays` VALUES (null, 'Venezuela');
+INSERT INTO `Pays` VALUES (null, 'Vietnam');
+INSERT INTO `Pays` VALUES (null, 'Virgin Islands (British)');
+INSERT INTO `Pays` VALUES (null, 'Virgin Islands (U.S.)');
+INSERT INTO `Pays` VALUES (null, 'Wallis and Futuna Islands');
+INSERT INTO `Pays` VALUES (null, 'Western Sahara');
+INSERT INTO `Pays` VALUES (null, 'Yemen');
+INSERT INTO `Pays` VALUES (null, 'Zaire');
+INSERT INTO `Pays` VALUES (null, 'Zambia');
+INSERT INTO `Pays` VALUES (null, 'Zimbabwe');
+
+
+/* 100 Villes */
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Rosciano",186),("Cobourg",199),("Barrhead",7),("Saguenay",217),("San Giovanni la Punta",86),("College",105),("Indianapolis",36),("Empedrado",75),("New Westminster",63),("Ercis",29);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("March",180),("Autre-Eglise",203),("Jonquière",149),("Talence",24),("Gulbarga",126),("Butte",53),("Evere",34),("Dumbarton",57),("Villata",1),("Miraj",173);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Pondicherry",121),("Merthyr Tydfil",43),("Windsor",198),("Llanidloes",29),("Niort",212),("North Bay",182),("West Valley City",56),("Montague",145),("Monte Patria",154),("Kielce",146);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Ichalkaranji",51),("Oristano",9),("Lincoln",155),("Aiello Calabro",108),("Lamont",244),("Guelph",21),("San Damiano al Colle",51),("Rum",211),("Arles",2),("Castelvetere in Val Fortore",194);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Adria",60),("Fernie",176),("Puntarenas",13),("Christchurch",23),("Rosoux-Crenwick",76),("Murcia",151),("Columbia",151),("Zelzate",144),("Toledo",131),("Chandigarh",75);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Eksaarde",97),("Chastre-Villeroux-Blanmont",217),("Açailândia",127),("St. Johann in Tirol",237),("Hartford",1),("Drachten",180),("Crewe",88),("Soissons",225),("Coronel",230),("Dover",136);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Regina",40),("Campagna",24),("Siegendorf",149),("Saint-Oyen",224),("Moliterno",48),("Freire",206),("Wachtebeke",146),("Nellore",135),("Pietrarubbia",39),("Dortmund",77);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Lichfield",64),("Incourt",43),("Llangefni",157),("Rotello",106),("Akron",119),("Te Puke",105),("Bottrop",19),("Huntly",136),("Impe",70),("Calgary",35);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Acquasanta Terme",47),("Teno",99),("Putignano",147),("RockVille",36),("Bionaz",192),("Vaughan",202),("Bacabal",2),("Auburn",135),("Rugby",73),("ColeVille Lake",161);
+INSERT INTO `Ville` (`name`,`PaysId`) VALUES ("Birecik",166),("Afsnee",212),("Mayerthorpe",143),("Getafe",214),("Hyères",68),("Saint-Étienne-du-Rouvray",155),("Pictou",246),("Ramsey",41),("Goiânia",110),("Frankston",2);
+
+/* 100 Adresse */
+INSERT INTO `Adresse` (`label`) VALUES ("886-6383 Felis. St."),("P.O. Box 742, 777 In St."),("P.O. Box 169, 8689 Neque Rd."),("Ap #322-2896 Ac Rd."),("Ap #892-8248 Eu Road"),("880-7476 Orci, Rd."),("Ap #427-7333 Aliquam Street"),("P.O. Box 645, 5850 Tempus Rd."),("111-6948 Dictum Rd."),("852-469 Duis Rd.");
+INSERT INTO `Adresse` (`label`) VALUES ("Ap #575-8340 Ac Avenue"),("Ap #673-5075 Faucibus Road"),("P.O. Box 552, 9293 Morbi Rd."),("104-4637 Sit St."),("254-8806 Nunc St."),("Ap #195-8106 Nisi Av."),("Ap #369-8523 Cursus Rd."),("131-9308 Enim. Avenue"),("466-4655 Tristique St."),("6230 Bibendum. Av.");
+INSERT INTO `Adresse` (`label`) VALUES ("868-5154 Ultricies Street"),("458-4099 Tempor Av."),("515-642 Quam. St."),("Ap #898-348 Arcu Av."),("261 Massa. Road"),("5186 Nunc Ave"),("Ap #758-5348 Gravida. Av."),("933-3519 Tortor Ave"),("P.O. Box 325, 9986 Orci. Av."),("389-4503 Eget, Street");
+INSERT INTO `Adresse` (`label`) VALUES ("463-8132 Non Av."),("Ap #865-7827 Fames Av."),("P.O. Box 103, 6041 Vehicula Road"),("4793 Ante Avenue"),("1015 Suspendisse Rd."),("Ap #639-5352 Et Road"),("9648 Magna. Av."),("6586 Facilisis Rd."),("Ap #756-3164 Fringilla St."),("P.O. Box 437, 7295 Ut Street");
+INSERT INTO `Adresse` (`label`) VALUES ("4824 Curae; St."),("805-6764 Interdum. Road"),("887-9127 Eu Street"),("Ap #641-1353 Non, Road"),("P.O. Box 803, 6644 Aliquam Street"),("859-1612 Non Avenue"),("3486 Vestibulum, St."),("P.O. Box 390, 9328 Erat Avenue"),("5640 Sit Avenue"),("P.O. Box 944, 2391 Neque. Avenue");
+INSERT INTO `Adresse` (`label`) VALUES ("P.O. Box 642, 7477 At Road"),("455-2893 Erat Rd."),("616-852 In, Rd."),("Ap #689-4931 Vitae Rd."),("Ap #417-6663 Suspendisse Av."),("Ap #397-4439 Est. St."),("826-7778 Fermentum Road"),("P.O. Box 912, 426 Imperdiet St."),("Ap #996-9390 Dignissim. Road"),("543-2476 Lobortis Road");
+INSERT INTO `Adresse` (`label`) VALUES ("Ap #360-2075 Feugiat Rd."),("Ap #682-2361 Sem Road"),("P.O. Box 165, 9883 Donec Rd."),("900-533 Dignissim Avenue"),("P.O. Box 574, 7267 Ipsum Rd."),("378 Hendrerit St."),("197-9603 Vel Road"),("938-1696 Eleifend St."),("599-2752 Tempus Avenue"),("P.O. Box 242, 3705 Elit, Rd.");
+INSERT INTO `Adresse` (`label`) VALUES ("105 Vel, St."),("P.O. Box 517, 7749 Senectus Road"),("Ap #937-9108 Eu St."),("6883 Eu Avenue"),("4531 Libero Avenue"),("974-5544 Purus St."),("Ap #640-3110 Arcu. Av."),("P.O. Box 250, 3056 Et Street"),("Ap #641-3750 Lacinia. Street"),("Ap #515-4283 Turpis Street");
+INSERT INTO `Adresse` (`label`) VALUES ("690-6989 Risus Rd."),("6017 Lectus Street"),("Ap #698-6285 Suspendisse Av."),("P.O. Box 459, 2668 Vehicula Street"),("6910 Urna. Ave"),("529-7091 Egestas, Avenue"),("863-3571 Suscipit, Rd."),("P.O. Box 784, 5577 Quam. St."),("Ap #623-3595 Ligula Ave"),("3547 Auctor Av.");
+INSERT INTO `Adresse` (`label`) VALUES ("Ap #976-3747 Ante Rd."),("P.O. Box 536, 1454 Magnis Rd."),("333 Dolor. Avenue"),("P.O. Box 175, 3947 Morbi Rd."),("P.O. Box 739, 2977 Donec Road"),("216-3823 Donec St."),("Ap #123-8562 Facilisis Rd."),("7296 Orci. St."),("4416 Tellus Road"),("P.O. Box 914, 740 Donec Road");
+
+/* 100 AdresseVilles */
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (29,99),(58,22),(70,20),(20,27),(62,10),(56,58),(40,94),(57,39),(79,45),(10,96);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (100,90),(14,93),(44,99),(3,36),(59,4),(54,32),(83,89),(54,45),(6,89),(31,45);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (29,76),(12,51),(67,85),(61,40),(70,38),(11,89),(56,4),(11,48),(100,4),(77,47);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (13,87),(39,73),(94,39),(2,94),(66,72),(4,6),(72,5),(29,66),(53,96),(6,58);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (10,83),(48,18),(17,84),(3,20),(88,71),(77,7),(15,24),(9,59),(94,75),(11,16);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (34,76),(66,88),(89,47),(89,91),(53,62),(17,89),(4,87),(82,12),(10,49),(70,93);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (38,70),(86,10),(30,15),(11,96),(9,74),(25,99),(44,97),(55,55),(2,14),(55,71);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (78,92),(21,43),(67,12),(74,28),(94,16),(8,66),(14,77),(83,10),(36,55),(39,49);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (79,26),(25,30),(100,23),(28,31),(6,93),(67,90),(53,40),(82,20),(33,38),(78,1);
+INSERT INTO `AdresseVille` (`VilleId`,`AdresseId`) VALUES (2,66),(14,51),(51,84),(97,15),(82,99),(2,16),(9,32),(35,66),(8,74),(88,80);
+
+/* 40 Companies */
+INSERT INTO `Companie` (`name`,`siegeId`) VALUES ("Ultricies Ornare Elit Institute",55),("Dis Industries",56),("Mauris Sagittis Industries",35),("Scelerisque Associates",56),("A LLP",73),("Tristique Pellentesque Tellus Ltd",63),("Sagittis Institute",10),("Magna Tellus Corp.",53),("Sed Nec Metus Institute",15),("Ut Eros Corporation",93);
+INSERT INTO `Companie` (`name`,`siegeId`) VALUES ("Cursus Et Inc.",64),("Enim Mi Institute",95),("Dapibus Id Institute",55),("Scelerisque Neque Nullam Ltd",31),("Ante Ltd",18),("Ipsum Dolor Sit Limited",16),("Elit Etiam LLC",33),("Placerat Velit Corp.",19),("Arcu Nunc Mauris Limited",91),("Nunc Limited",42);
+INSERT INTO `Companie` (`name`,`siegeId`) VALUES ("Mauris Quis Turpis Company",29),("Nullam Limited",23),("Pharetra Felis Institute",22),("Ipsum Sodales Purus Company",80),("Iaculis Institute",17),("Egestas Nunc Associates",90),("Libero Et Institute",23),("Suspendisse Company",91),("Egestas Ltd",87),("Eget Nisi LLC",74);
+INSERT INTO `Companie` (`name`,`siegeId`) VALUES ("Aliquet PC",75),("Orci Phasellus Foundation",70),("Convallis Est PC",97),("Nisi A Corp.",92),("Fringilla Purus Corporation",13),("Ligula Limited",60),("Nullam Vitae Diam Institute",50),("Ultricies Sem Magna Institute",78),("Morbi Neque LLP",37),("Enim Commodo Foundation",70);
+
+
+/* 4 type Transport */
+INSERT INTO `TypeTransport` (`label`) VALUES ("Avion"),("Train"),("Bateau"),("Bus");
+
+/* 30 Transports */
+INSERT INTO `Transport` (`typeTransportId`) VALUES (1),(1),(3),(1),(2),(1),(1),(3),(4),(2);
+INSERT INTO `Transport` (`typeTransportId`) VALUES (2),(2),(1),(3),(1),(1),(2),(1),(3),(1);
+INSERT INTO `Transport` (`typeTransportId`) VALUES (4),(4),(2),(4),(4),(1),(1),(4),(1),(2);
+
+/* 40 Conducteur */
+INSERT INTO `Conducteur` (`id`,`companyId`,`date_debut`,`date_fin`,`guid`) VALUES (1,15,"2017-01-23","2022-04-29","8FF2EB13-DAA6-7024-E2AD-615C2B861470"),(2,16,"2018-06-04","2022-08-30","31BF278F-2F43-5FB2-A148-083BDCD6FD56"),(3,12,"2018-05-14","2020-07-19","91270647-098E-99E0-DC09-93665F2E5EE7"),(4,19,"2016-01-09","2020-01-07","BC529AEF-F329-320A-A495-3ADEFFB11B01"),(5,19,"2016-07-19","2019-06-11","73935A22-C8ED-0461-12BE-299C173CEF5B"),(6,1,"2018-03-08","2019-10-31","83E0AFCC-DC41-0F66-1EFF-1DBA2409BDDE"),(7,20,"2018-04-04","2022-10-06","1995A8CA-CABB-35D0-E503-7B8202EFD714"),(8,1,"2017-11-27","2020-01-24","615A539B-801E-5AFF-2016-8AC716D3E206"),(9,27,"2017-11-17","2022-02-27","072C71B4-932F-2154-8DCD-0E0F89F0BDA0"),(10,8,"2018-09-03","2019-09-30","F7E0EB04-887F-B9C5-0F3D-B24ECCDC85A3");
+INSERT INTO `Conducteur` (`id`,`companyId`,`date_debut`,`date_fin`,`guid`) VALUES (11,9,"2016-06-22","2024-07-28","55FE81CD-2CBE-91D5-7CBC-29D29E16696E"),(12,30,"2018-12-31","2023-04-05","B7CD7EF9-AA9E-832F-7C90-5959E486DBD8"),(13,1,"2017-07-13","2019-10-05","90D0004C-A7EB-FA82-3DDD-07E8B53F807A"),(14,4,"2018-07-24","2023-05-21","3C7BBB81-5A16-6C3F-90CA-918B2A70A907"),(15,13,"2016-09-13","2019-11-10","0108BA8E-BEFF-367F-AF1E-6273F7510663"),(16,8,"2019-02-22","2022-04-09","209AF9BD-B723-6016-D508-6A7903A6CB32"),(17,32,"2018-04-29","2024-01-12","F2F88DC8-2508-1DC0-90C1-478BFBFBF09D"),(18,2,"2019-02-08","2020-03-17","04A78B3B-8700-7B9A-1B04-6A035D35ADA6"),(19,35,"2018-11-09","2021-02-18","34292619-27F7-5698-6C73-23C83B72D5B0"),(20,28,"2017-04-05","2019-06-25","477985D7-C53E-AE12-BE7A-8152115D7068");
+INSERT INTO `Conducteur` (`id`,`companyId`,`date_debut`,`date_fin`,`guid`) VALUES (21,12,"2016-08-16","2022-04-14","346EB6E6-ADE0-25D2-F8B9-54DD9541A654"),(22,35,"2016-04-17","2022-09-23","5954FE0A-1DEC-1911-573E-6BDD23D80FC4"),(23,8,"2018-07-28","2020-05-24","6730EC51-C22D-B0CA-5602-671669FEFE75"),(24,25,"2016-06-10","2019-09-21","146B6753-5526-D023-218C-EEC1358B2848"),(25,30,"2017-07-19","2022-01-21","88D12A42-2C9A-093E-A18C-E7C062C8CEB9"),(26,10,"2018-02-20","2020-01-30","F05F0A7F-D765-8609-27F6-C790FBA12BA4"),(27,23,"2016-12-20","2024-02-20","6021A0D5-B01C-7312-F927-9B27735C501F"),(28,10,"2016-06-23","2020-11-26","D9A0675C-0F29-BD03-FFA5-BCB858554C14"),(29,14,"2017-05-24","2022-11-15","1C831C25-D9F1-C8DA-B833-DA7CE22CE95E"),(30,37,"2016-03-17","2021-02-10","DA850AD3-D0CB-C23B-842A-5A50ADC0412F");
+INSERT INTO `Conducteur` (`id`,`companyId`,`date_debut`,`date_fin`,`guid`) VALUES (31,14,"2017-04-06","2023-04-15","D9ED4D4A-C0C0-548E-F122-21E7336E4AC0"),(32,32,"2019-03-06","2021-07-12","D1D44CDF-1959-7429-8910-BDBB40FCABFC"),(33,33,"2016-10-10","2021-10-29","2BBA8F4A-00DE-DD01-D512-39277990B017"),(34,23,"2016-09-15","2024-03-20","05CC0E2C-2A39-B366-20AE-A09B8A3EEF07"),(35,40,"2019-02-10","2022-09-18","4BB7DEBA-62D7-28A5-0AB3-389D7215A90C"),(36,32,"2016-10-09","2024-01-30","6FC0ACF8-FC4D-62B5-5054-907E77B4C6DF"),(37,35,"2017-05-17","2023-06-20","E7EA92FC-78CD-A9B1-D9AB-3CFF751E4A2F"),(38,30,"2016-04-01","2023-06-09","4D4287D9-77DA-33CB-8770-F107B168C8F8"),(39,3,"2017-09-13","2021-09-19","EBA1D6E6-B8EF-AABE-9983-F6487F274582"),(40,7,"2016-09-04","2024-06-01","46B8AA07-3A00-AA0B-7255-E610F02D694F");
+
+/* 40 Trajets */
+INSERT INTO `Trajet` (`AdresseDepartId`,`AdresseArriveId`,`date_depart`,`date_arrive`) VALUES (47,44,"2017-03-03","017-03-03"),(10,73,"2017-12-11","2017-12-11"),(10,49,"2016-08-04","2016-08-04"),(72,44,"2016-02-03","2016-02-03"),(87,79,"2017-05-19","2017-05-19"),(64,14,"2016-02-14","2016-02-14"),(68,79,"2017-04-14","2017-04-14"),(47,41,"2016-04-09","2016-04-09"),(57,47,"2017-02-17","2017-02-17"),(56,93,"2017-03-18","2017-03-18");
+INSERT INTO `Trajet` (`AdresseDepartId`,`AdresseArriveId`,`date_depart`,`date_arrive`) VALUES (12,69,"2018-11-02","2018-11-02"),(35,81,"2017-07-09","2017-07-09"),(54,39,"2018-08-28","2018-08-28"),(50,26,"2018-01-19","2018-01-19"),(11,77,"2016-08-28","2016-08-28"),(88,15,"2017-12-18","2017-12-18"),(77,63,"2016-03-29","2016-03-29"),(43,70,"2016-04-21","2016-04-21"),(86,65,"2018-03-11","2018-03-11"),(20,79,"2016-07-06","2016-07-06");
+INSERT INTO `Trajet` (`AdresseDepartId`,`AdresseArriveId`,`date_depart`,`date_arrive`) VALUES (92,100,"2016-03-20","2016-03-20"),(13,64,"2016-06-30","2016-06-30"),(96,16,"2016-03-12","2016-03-12"),(1,40,"2017-01-08","2017-01-08"),(85,72,"2016-03-02","2016-03-02"),(32,100,"2016-04-03","2016-04-03"),(68,14,"2018-11-17","2018-11-17"),(29,74,"2019-01-18","2019-01-18"),(45,81,"2016-06-21","2016-06-21"),(10,54,"2017-03-29","2017-03-29");
+INSERT INTO `Trajet` (`AdresseDepartId`,`AdresseArriveId`,`date_depart`,`date_arrive`) VALUES (8,8,"2017-01-07","2017-01-07"),(41,98,"2016-09-28","2016-09-28"),(3,94,"2018-11-27","2018-11-27"),(50,54,"2017-05-19","2017-05-19"),(87,18,"2016-12-22","2016-12-22"),(70,61,"2018-04-16","2018-04-16"),(11,90,"2016-07-23","2016-07-23"),(46,44,"2018-03-18","2018-03-18"),(43,54,"2017-08-27","2017-08-27"),(5,79,"2017-08-19","2017-08-19");
+
+/* 40 */
+INSERT INTO `CTT` (`transportId`,`trajetId`,`conducteurId`) VALUES (8,1,26),(14,2,36),(17,3,24),(16,4,16),(17,5,1),(27,6,7),(27,7,9),(10,8,33),(28,9,32),(7,10,4);
+INSERT INTO `CTT` (`transportId`,`trajetId`,`conducteurId`) VALUES (30,11,4),(9,12,12),(16,13,39),(8,14,28),(30,15,5),(25,16,20),(3,17,18),(1,18,1),(18,19,26),(28,20,10);
+INSERT INTO `CTT` (`transportId`,`trajetId`,`conducteurId`) VALUES (10,21,3),(13,22,35),(25,23,8),(18,24,23),(2,25,10),(25,26,38),(8,27,15),(22,28,36),(20,29,24),(9,30,12);
+INSERT INTO `CTT` (`transportId`,`trajetId`,`conducteurId`) VALUES (5,31,12),(24,32,13),(12,33,22),(1,34,26),(21,35,6),(29,36,36),(19,37,19),(9,38,34),(16,39,6),(2,40,28);
+
+
+-- Voyage inserts
+
+INSERT INTO `Voyage` (`id`,`name`) VALUES (1,"libero et tristique"),(2,"tellus sem mollis"),(3,"per conubia nostra,"),(4,"consectetuer adipiscing elit."),(5,"eros turpis non"),(6,"ut odio vel"),(7,"ut lacus. Nulla"),(8,"vel, faucibus id,"),(9,"sapien, cursus in,"),(10,"risus. Donec egestas.");
+INSERT INTO `Voyage` (`id`,`name`) VALUES (11,"luctus et ultrices"),(12,"ut, sem. Nulla"),(13,"varius orci, in"),(14,"Ut tincidunt orci"),(15,"convallis, ante lectus"),(16,"vitae diam. Proin"),(17,"orci lobortis augue"),(18,"elit sed consequat"),(19,"Proin eget odio."),(20,"tincidunt, neque vitae");
+INSERT INTO `Voyage` (`id`,`name`) VALUES (21,"ullamcorper, velit in"),(22,"vulputate ullamcorper magna."),(23,"vulputate, posuere vulputate,"),(24,"in faucibus orci"),(25,"congue turpis. In"),(26,"tellus. Phasellus elit"),(27,"dolor quam, elementum"),(28,"diam dictum sapien."),(29,"Sed malesuada augue"),(30,"feugiat. Sed nec");
+INSERT INTO `Voyage` (`id`,`name`) VALUES (31,"libero. Proin mi."),(32,"porta elit, a"),(33,"felis eget varius"),(34,"sagittis augue, eu"),(35,"dictum placerat, augue."),(36,"mauris a nunc."),(37,"sagittis. Nullam vitae"),(38,"Nam interdum enim"),(39,"semper tellus id"),(40,"ornare placerat, orci");
+
+
+-- VV inserts
+
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (334,4,1664,3),(350,7,1054,1),(397,38,1992,1),(396,30,917,4),(290,28,1420,2),(367,9,1306,4),(400,18,1101,4),(307,28,705,1),(62,5,557,5),(239,19,706,5);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (263,9,757,4),(364,36,1342,2),(297,14,1155,5),(135,34,1385,1),(230,31,593,5),(399,19,1799,2),(359,8,659,5),(400,12,568,2),(157,15,1759,4),(86,31,1313,5);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (314,19,417,1),(201,39,499,4),(337,39,969,1),(392,14,1385,2),(230,8,1041,2),(73,21,1478,5),(140,21,853,1),(193,29,1223,4),(265,24,591,3),(399,21,1615,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (389,19,1679,5),(225,32,635,5),(175,37,1963,5),(341,29,1317,2),(107,37,968,3),(313,36,584,2),(209,27,1782,4),(135,21,697,2),(318,18,498,1),(149,5,1283,5);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (55,34,490,5),(388,13,1863,4),(340,1,454,5),(306,4,750,3),(150,6,1865,2),(283,16,784,5),(323,10,462,3),(338,22,461,5),(124,1,1615,1),(372,34,1659,1);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (304,11,1815,2),(86,14,824,4),(357,2,796,5),(353,10,1955,2),(109,35,1315,4),(103,18,1864,1),(47,19,1972,5),(227,31,730,4),(204,6,1019,5);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (172,37,403,2),(328,12,896,4),(353,16,884,5),(335,40,1440,4),(354,1,1252,4),(64,15,350,3),(194,21,1846,3),(201,35,1505,2),(44,20,668,5),(105,9,573,1);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (144,34,1598,1),(318,10,846,2),(336,10,1274,1),(388,15,304,3),(64,33,1643,3),(232,17,1516,4),(261,14,840,3),(149,20,1867,4),(97,14,1666,3),(244,34,1025,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (114,24,436,2),(81,10,1946,4),(93,10,1099,1),(312,38,244,4),(393,6,478,1),(357,12,551,3),(344,33,1674,4),(184,5,786,1),(347,11,395,3),(263,38,1010,1);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (375,11,1883,5),(274,34,1970,1),(373,10,683,5),(343,6,720,3),(342,36,275,5),(275,17,404,1),(324,19,1083,2),(192,27,1073,4);
+
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (66,3,542,3),(378,18,1269,1),(122,10,1710,3),(196,28,1557,1),(165,38,1225,5),(363,20,577,2),(399,36,1562,2),(140,3,1242,1),(349,36,1402,2),(113,15,436,4);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (181,35,763,5),(382,14,312,3),(82,33,1846,1),(253,26,1405,3),(363,6,1113,5),(176,34,1316,2),(377,36,1958,5),(284,34,481,3),(113,38,389,2),(297,3,1447,2);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (56,38,1454,2),(159,29,1186,3),(272,20,266,2),(121,23,818,5),(52,20,985,5),(200,2,897,2),(381,25,1467,1),(356,39,1974,1),(232,18,1242,3),(215,8,1151,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (392,27,1488,5),(328,3,1973,1),(263,37,774,2),(205,37,739,3),(336,25,271,5),(137,17,1273,4),(58,6,1453,2),(65,1,849,3),(310,25,1443,2),(88,4,1759,1);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (359,39,1998,2),(357,26,1753,1),(374,39,1429,1),(284,4,268,1),(268,11,1126,4),(231,9,1485,3),(331,24,1378,4),(177,37,1641,3),(265,12,442,5),(50,34,1103,4);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (197,24,1192,2),(241,5,1435,3),(289,30,1341,3),(282,20,1039,2),(357,17,289,2),(254,14,1188,2),(337,33,1646,5),(359,19,1439,3),(360,14,1077,5),(206,16,944,2);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (56,25,1769,5),(373,20,1505,1),(311,22,1647,5),(181,14,1076,5),(140,4,453,5),(369,20,1598,1),(84,14,1398,5),(157,10,389,2),(143,37,632,3),(291,2,986,5);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (247,5,751,1),(193,35,734,2),(302,40,823,4),(116,13,548,1),(78,26,1473,1),(95,29,1955,5),(257,17,660,1),(270,32,1909,4),(85,38,1694,4);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (227,33,1863,2),(330,17,248,2),(138,2,365,1),(150,1,1424,3),(229,30,947,4),(53,25,1354,5),(342,25,889,3),(53,32,1155,5),(397,27,1103,3),(100,34,1281,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (99,7,1249,4),(216,2,453,5),(228,34,901,5),(108,33,1559,5),(152,17,1661,4),(272,38,324,1),(65,21,1017,3),(305,4,324,4),(274,28,296,4),(180,6,1265,2);
+
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (79,14,479,1),(130,21,818,3),(244,15,686,2),(122,23,1550,3),(70,26,1763,4),(344,32,1710,5),(100,33,294,4),(91,27,567,4),(233,33,1518,2),(255,12,1185,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (363,7,1536,2),(205,4,574,4),(317,11,299,1),(71,14,1824,2),(235,5,1274,3),(171,26,1821,3),(145,38,1547,1),(233,9,1251,1),(112,40,665,3),(284,30,1069,4);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (64,7,1843,2),(149,34,1525,4),(361,4,762,5),(211,34,1910,1),(359,11,419,4),(397,15,1256,1),(141,16,329,3),(156,13,1439,2),(208,8,232,5),(333,29,675,5);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (268,24,669,5),(149,13,1913,1),(274,40,653,1),(190,21,256,3),(379,22,1646,5),(360,28,533,2),(391,9,847,4),(64,17,696,3),(300,25,794,3),(340,4,987,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (45,32,264,1),(191,8,1559,5),(272,11,932,3),(163,19,968,5),(170,40,335,4),(71,7,1293,3),(363,11,457,3),(91,8,1016,1),(359,32,1852,3),(228,4,1036,2);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (223,21,1814,5),(390,32,1873,1),(269,21,881,1),(119,30,214,4),(124,21,235,3),(221,20,1718,3),(303,8,963,5),(159,26,555,2),(359,27,440,3),(275,33,1578,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (329,15,1087,1),(306,9,1270,3),(180,31,1275,1),(366,37,1954,3),(240,23,827,5),(76,34,627,3),(119,25,579,5),(312,19,1908,4),(300,1,1931,2),(388,30,231,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (67,31,1252,5),(391,18,938,4),(131,24,1124,5),(123,30,1536,5),(79,35,1007,3),(376,26,1276,4),(104,40,1389,2),(352,10,888,2),(255,25,240,4),(334,7,331,3);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (295,27,1064,1),(387,32,1247,1),(343,17,1847,4),(245,1,1999,3),(155,37,266,3),(196,15,1144,2),(332,4,1730,4),(375,24,1066,5),(346,3,893,2),(173,37,1146,4);
+INSERT INTO `VV` (`VoyageurId`,`voyageId`,`prix`,`notation`) VALUES (45,22,804,2),(58,20,1623,1),(376,19,376,3),(277,6,1471,3),(252,5,1292,1),(260,13,1508,2),(361,31,781,3),(257,40,1437,5),(396,17,972,3),(338,38,1326,4);
+
+
+-- VT inserts
+
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (37,40),(32,35),(23,7),(26,11),(16,27),(37,18),(28,12),(13,10),(19,23),(32,14);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (1,7),(13,1),(16,26),(39,3),(6,26),(19,16),(2,29),(24,30),(29,39),(13,4);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (34,2),(1,25),(23,5),(13,8),(23,28),(31,4),(34,18),(18,5),(4,33),(22,1);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (38,38),(24,38),(11,19),(20,32),(15,10),(26,4),(38,34),(14,11),(22,16);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (27,8),(24,6),(2,36),(12,7),(25,30),(38,36),(28,28),(10,30),(36,29);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (6,36),(23,30),(5,31),(6,12),(14,13),(34,12),(7,16),(26,7),(2,22);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (22,31),(4,30),(34,3),(37,36),(1,5),(10,29),(26,37),(13,11),(23,2),(32,5);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (2,32),(9,30),(12,33),(30,16),(5,20),(39,8),(40,34),(2,23),(14,30),(8,3);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (36,39),(19,34),(2,16),(2,12),(37,23),(29,15),(25,33),(11,7),(1,36),(22,20);
+INSERT INTO `VT` (`voyageId`,`trajetId`) VALUES (39,7),(5,14),(14,4),(15,35),(6,10),(38,20),(35,21),(18,33),(5,30);
